@@ -10,6 +10,7 @@ logger = setup_logger("crowdguard", "logs/crowdguard.log")
 @app.post("/generate")
 async def generate_content(request: Request):
     try:
+        print("hekko")
         data = await request.json()
         user_type = data.get("user_type")
         query = data.get("query")
