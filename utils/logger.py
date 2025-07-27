@@ -1,11 +1,20 @@
-# Shared logger utility
 import logging
+import os
 
-LOG_FORMAT = '%(asctime)s | %(levelname)s | %(name)s | %(message)s'
-LOG_LEVEL = logging.INFO
+def setup_logger(name: str, log_file: str, level=logging.INFO):
+    """Function to setup a logger; creates log file if it doesn't exist."""
+    log_dir = os.path.dirname(log_file)
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
 
-logging.basicConfig(level=LOG_LEVEL, format=LOG_FORMAT)
+    formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 
-def get_logger(name: str = __name__):
-    """Get a logger with the specified name, pre-configured for the app."""
-    return logging.getLogger(name) 
+    handler = logging.FileHandler(log_file)
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    if not logger.hasHandlers():
+        logger.addHandler(handler)
+
+    return logger
