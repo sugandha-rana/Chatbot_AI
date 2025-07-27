@@ -229,19 +229,19 @@ def test_firestore_connection():
         collections = ['users', 'events', 'alerts', 'incidents', 'lost_and_found', 'documents']
         
         for collection in collections:
-            print(f"\n=== {collection.upper()} ===")
+            logger.info(f"\n=== {collection.upper()} ===")
             documents = service.get_all_documents(collection)
-            print(f"Found {len(documents)} documents")
+            logger.info(f"Found {len(documents)} documents")
             
             if documents:
                 # Show first document as example
-                print("Sample document:")
-                print(documents[0])
+                logger.info("Sample document:")
+                logger.info(documents[0])
         
-        print("\n=== CONNECTION TEST COMPLETED ===")
+        logger.info("\n=== CONNECTION TEST COMPLETED ===")
         
     except Exception as e:
-        print(f"Connection test failed: {str(e)}")
+        logger.error(f"Connection test failed: {str(e)}")
 
 if __name__ == "__main__":
     # Run the test when script is executed directly

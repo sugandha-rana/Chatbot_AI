@@ -1,13 +1,16 @@
 from langchain.agents import Tool
 from service.llm_service import LLMService
-from service.mock_data_service import mock_data
+from service.mock_data_service import MockDataService
 
 def admin_db_search_tool(query: str) -> str:
     """
     Handles admin queries on the event data. It provides a structured LLM-powered response based on mock DB.
     """
 
-    # Step 1: Convert mock_data into context string
+    # Step 1: Get mock data and convert into context string
+    mock_data_service = MockDataService()
+    mock_data = mock_data_service.get_all_data()
+    
     formatted_data = ""
     for section, items in mock_data.items():
         formatted_data += f"\n### {section.upper()} ###\n"
@@ -18,7 +21,7 @@ def admin_db_search_tool(query: str) -> str:
             formatted_data += f"{items}\n"
 
     # Step 2: Prepare the prompt
-    prompt = f\"\"\"
+    prompt = f"""
         You are an event assistant AI for a safety platform.
 
         A user has asked: "{query}"
@@ -27,7 +30,7 @@ def admin_db_search_tool(query: str) -> str:
         {formatted_data}
 
         Please analyze the data and return a helpful, clear, human-readable answer to the query. Avoid technical language. Be brief but informative.
-        \"\"\"
+        """
 
     # Step 3: Pass to LLM
     return LLMService().model.invoke(prompt)
@@ -51,6 +54,9 @@ def admin_report_tool(query: str = "Generate a summary report") -> str:
     Generates a smart summary report from the mock database.
     """
 
+    mock_data_service = MockDataService()
+    mock_data = mock_data_service.get_all_data()
+    
     users = mock_data.get("users", [])
     events = mock_data.get("events", [])
     alerts = mock_data.get("alerts", [])
@@ -80,9 +86,9 @@ def admin_report_tool(query: str = "Generate a summary report") -> str:
     }
 
     # Format stats as context
-    context = "\\n".join([f"{k}: {v}" for k, v in stats.items()])
+    context = "\n".join([f"{k}: {v}" for k, v in stats.items()])
 
-    prompt = f\"\"\"
+    prompt = f"""
     You are an Admin Summary Generator AI.
 
     Based on the following event platform statistics, generate a clean, readable summary for an admin:
@@ -90,6 +96,6 @@ def admin_report_tool(query: str = "Generate a summary report") -> str:
     {context}
 
     Make it human-readable, short, and actionable.
-    \"\"\"
+    """
 
     return LLMService().model.invoke(prompt)

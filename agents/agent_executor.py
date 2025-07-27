@@ -4,6 +4,7 @@ from service.llm_service import LLMService
 from langchain.agents import AgentExecutor, Tool
 from langchain.agents import ConversationalChatAgent
 from typing import List
+from utils.logger import setup_logger
 
 llm_service = LLMService()
 
@@ -15,12 +16,13 @@ class AgentExecutorBuilder:
         Args:
             user_type (str): The user type/role to get tools and prompt for.
         """
-        print(f"Initializing AgentExecutorBuilder for user_type: {user_type}")
+        self.logger = setup_logger("agent_executor", "logs/crowdguard.log")
+        self.logger.info(f"Initializing AgentExecutorBuilder for user_type: {user_type}")
         self.llm = llm_service.model
         self.tools = get_tools_for_role(user_type)
-        print(f"Tools loaded: {[tool.name for tool in self.tools]}")
+        self.logger.info(f"Tools loaded: {[tool.name for tool in self.tools]}")
         self.system_prompt = get_prompt_for_role(user_type)
-        print(f"System prompt set: {self.system_prompt[:100]}...")
+        self.logger.info(f"System prompt set: {self.system_prompt[:100]}...")
 
     def create(self) -> AgentExecutor:
         """
@@ -29,14 +31,14 @@ class AgentExecutorBuilder:
         Returns:
             AgentExecutor: Configured agent executor instance.
         """
-        print("Creating ConversationalChatAgent with provided LLM, tools, and system prompt.")
+        self.logger.info("Creating ConversationalChatAgent with provided LLM, tools, and system prompt.")
         chat_agent = ConversationalChatAgent.from_llm_and_tools(
             llm=self.llm,
             tools=self.tools,
             system_message=self.system_prompt,
             verbose=True
         )
-        print("ConversationalChatAgent created successfully.")
+        self.logger.info("ConversationalChatAgent created successfully.")
 
         agent_executor = AgentExecutor.from_agent_and_tools(
             agent=chat_agent,
@@ -44,5 +46,5 @@ class AgentExecutorBuilder:
             verbose=True,
             handle_parsing_errors=True
         )
-        print("AgentExecutor instance created successfully.")
+        self.logger.info("AgentExecutor instance created successfully.")
         return agent_executor

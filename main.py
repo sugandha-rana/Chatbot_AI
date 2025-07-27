@@ -3,14 +3,24 @@ from fastapi.responses import JSONResponse
 from agents.agent_executor import AgentExecutorBuilder
 from utils.logger import setup_logger
 
-app = FastAPI()
+app = FastAPI(title="CrowdGuard AI", description="AI-powered crowd management system")
 
 logger = setup_logger("crowdguard", "logs/crowdguard.log")
+
+@app.get("/")
+async def root():
+    """Root endpoint to check if server is running"""
+    return {"message": "CrowdGuard AI Server is running!", "endpoints": ["/generate"]}
+
+@app.get("/health")
+async def health_check():
+    """Health check endpoint"""
+    return {"status": "healthy", "timestamp": "2024-01-01T12:00:00Z"}
 
 @app.post("/generate")
 async def generate_content(request: Request):
     try:
-        print("hekko")
+        logger.info("Received request to /generate endpoint")
         data = await request.json()
         user_type = data.get("user_type")
         query = data.get("query")
@@ -24,7 +34,8 @@ async def generate_content(request: Request):
 
         agent = AgentExecutorBuilder(user_type).create()
         logger.info("AgentExecutor created, running query...")
-        response = agent.run(query)
+        # Pass empty chat history for ConversationalChatAgent
+        response = agent.run({"input": query, "chat_history": []})
         logger.info(f"Agent response: {response}")
 
         return response
